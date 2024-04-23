@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import random
 import os
 import h5py
+from sklearn.metrics import classification_report, confusion_matrix
 
 class DLLayer():
 
@@ -14,6 +15,9 @@ class DLLayer():
         with h5py.File(path+"/"+file_name+'.h5', 'w') as hf:
             hf.create_dataset("W", data=self.W)
             hf.create_dataset("b", data=self.b)
+            hf.create_dataset("num_units", data=self._num_units)
+            hf.create_dataset("input_shape", data=self._input_shape)
+            hf.create_dataset("activation", data=self._activation)
 
     def init_weights(self, W_initialization):
         self.b = np.zeros((self._num_units,1), dtype=float)
@@ -25,7 +29,7 @@ class DLLayer():
             self.W = np.random.randn(self._num_units, *(self._input_shape)) * self.random_scale
         elif W_initialization == "He" :
             self.W = np.random.randn(self._num_units, *(self._input_shape)) * np.sqrt(1.0 / self.Nlm1)
-        elif W_initialization == "Xaviar" :
+        elif W_initialization == "Xaviar" : 
             self.W = np.random.randn(self._num_units, *(self._input_shape)) * np.sqrt(2.0 / self.Nlm1)
         else: #Initialization isn't anything we expect initially
             try:
@@ -379,16 +383,42 @@ class DLModel():
     def _categorical_cross_entropy_backward(self, AL, Y):
         return (AL - Y)
 
-    #לא עובד כי אין לי מושג איזה ספרייה זה בשביל הפונקציה confusion matrix ולכן זה ייתן שגיאה
-    #def confusion_matrix(self, X, Y):
-    #    prediction = self.predict(X)
-    #    prediction_index = np.argmax(prediction, axis=0)
-    #    Y_index = np.argmax(Y, axis=0)
-    #    right = np.sum(prediction_index == Y_index)
-    #    print("accuracy: ",str(right/len(Y[0])))
-    #    cf = confusion_matrix(prediction_index, Y_index)
-    #    print(cf)
-    #    return cf
+    def confusion_matrix(self, X, Y):
+           prediction = self.predict(X)
+           prediction_index = np.argmax(prediction, axis=0)
+           Y_index = np.argmax(Y, axis=0)
+           right = np.sum(prediction_index == Y_index)
+           print("accuracy: ",str(right/len(Y[0])))
+           cf = confusion_matrix(prediction_index, Y_index)
+           print(cf)
+           return cf
+
+    def load_model(self, folder):
+        # Get list of files
+        filepaths = os.listdir(folder)
+
+        # Re-populate list with filename, size tuples
+        for i in range(len(filepaths)):
+            filepaths[i] = (filepaths[i], os.path.getsize(folder + "/" + filepaths[i]))
+
+        filepaths.sort(key=lambda filename: filename[1], reverse=True) #Sort the file list by file size, for correct layer order
+
+        # Re-populate list with just filenames
+        for i in range(len(filepaths)):
+            filepaths[i] = filepaths[i][0]
+
+        for file_name in filepaths:
+            try:
+                    with h5py.File(folder + "/" + file_name, 'r') as hf:
+                        num_units = hf['num_units'][()]
+                        input_shape = hf['input_shape'][:]
+                        activation = hf['activation'][()].decode() #You need to decode for strings, not for numbers or array of numbers
+                        new_layer = DLLayer(file_name[:-3], num_units, input_shape, activation)
+                        new_layer.W = hf['W'][:]
+                        new_layer.b = hf['b'][:]
+                        self.add(new_layer)
+            except (FileNotFoundError):
+                print("Not Found")
 
     def __str__(self):
 
