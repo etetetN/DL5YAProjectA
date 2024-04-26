@@ -11,6 +11,8 @@ import cv2
 import random
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtGui import QLinearGradient, QColor, QPalette
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 label_to_state = ["green", "red", "yellow"]
@@ -69,20 +71,33 @@ class ModelUI(QtWidgets.QMainWindow):
         super().__init__()
         self.setWindowTitle('Model UI')
         self.setGeometry(100, 100, 1000, 1000)
+        self.setStyleSheet("QLabel{font-size: 18pt;}")
+
+        palette = self.palette()
+        gradient = QtGui.QLinearGradient(0, 0, 0, 400)
+        gradient.setColorAt(0.0, QtGui.QColor(230, 247, 255))
+        gradient.setColorAt(1.0, QtGui.QColor(0, 174, 255))
+        palette.setBrush(QtGui.QPalette.ColorRole.Window, gradient)
+        self.setPalette(palette)
 
         self.image_label = QtWidgets.QLabel('No image uploaded')
         self.image_label.setAlignment(QtCore.Qt.AlignCenter)
         self.image_label.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
         self.image_label.setLineWidth(1)
         self.image_label.setFixedSize(400, 400)
+        self.image_label.setStyleSheet("border-radius: 20px;")  # Set round frame
 
         self.run_button = QtWidgets.QPushButton('Run Model')
+        self.run_button.setGeometry(200, 150, 100, 40)
+        self.run_button.setStyleSheet("background-color: rgb(0, 157, 230); font-size: 18pt; border-radius: 10px;")
         self.run_button.clicked.connect(self.run_model)
 
         self.output_label = QtWidgets.QLabel('Model Output: ')
         self.output_label.setAlignment(QtCore.Qt.AlignCenter)
 
         self.upload_button = QtWidgets.QPushButton('Upload Image')
+        self.upload_button.setGeometry(200, 150, 100, 40)
+        self.upload_button.setStyleSheet("background-color: rgb(0, 157, 230); font-size: 18pt; border-radius: 10px;")
         self.upload_button.clicked.connect(self.upload_image)
 
         self.input_path = ""

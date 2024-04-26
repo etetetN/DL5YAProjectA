@@ -1,11 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\mo32del",
     "\\traffic_light_data",
     "\\traffic_light_data\\train",
-    "\\traffic_light_data\\val",
-    "\\traffic_light_data\\val\\yellow"
+    "\\traffic_light_data\\val"
   ],
   "PreviewInSolutionExplorer": false
 }
